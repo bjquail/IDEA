@@ -1,5 +1,4 @@
-/* pages/index.module.css */
-
+/* index.module.css */
 
 .container {
   max-width: 700px;
@@ -7,7 +6,7 @@
   padding: 1rem;
 }
 
-h1 {
+.title {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -51,12 +50,12 @@ h1 {
   font-weight: 400;
 }
 
-.inputForm {
+.inputGroup {
   display: flex;
   gap: 0.5rem;
 }
 
-.inputForm input {
+.inputGroup input {
   flex: 1;
   padding: 0.75rem 1rem;
   border: 1px solid #ccc;
@@ -65,7 +64,7 @@ h1 {
   font-family: var(--font);
 }
 
-.inputForm button {
+.inputGroup button {
   background-color: var(--primary);
   color: white;
   border: none;
@@ -76,7 +75,7 @@ h1 {
   transition: background-color 0.2s ease;
 }
 
-.inputForm button:hover {
+.inputGroup button:hover {
   background-color: #225c99;
 }
 
