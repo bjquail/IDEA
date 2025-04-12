@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   const { messages } = req.body;
 
   try {
-    // Step 1: Create empty thread
+    // Create thread
     const threadRes = await fetch("https://api.openai.com/v1/threads", {
       method: "POST",
       headers: {
@@ -17,14 +17,16 @@ export default async function handler(req, res) {
     });
 
     const thread = await threadRes.json();
+    console.log("🧵 Thread created:", thread);
+
     if (!thread.id) {
-      console.error("Thread creation failed:", thread);
+      console.error("❌ Thread creation failed:", thread);
       return res.status(500).json({ error: "Failed to create thread." });
     }
 
-    // Step 2: Add messages to thread
+    // Add messages
     for (const msg of messages) {
-      await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
+      const messageRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -36,9 +38,12 @@ export default async function handler(req, res) {
           content: msg.content
         })
       });
+
+      const messageData = await messageRes.json();
+      console.log("📩 Message added:", messageData);
     }
 
-    // Step 3: Run the assistant
+    // Create run
     const runRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
       method: "POST",
       headers: {
@@ -52,12 +57,14 @@ export default async function handler(req, res) {
     });
 
     const run = await runRes.json();
+    console.log("🏃‍♂️ Run started:", run);
+
     if (!run.id) {
-      console.error("Run creation failed:", run);
+      console.error("❌ Run creation failed:", run);
       return res.status(500).json({ error: "Failed to start assistant run." });
     }
 
-    // Step 4: Poll for status
+    // Poll run status
     let runStatus = run.status;
     let attempts = 0;
     while (runStatus !== "completed" && runStatus !== "failed" && attempts < 30) {
@@ -72,13 +79,16 @@ export default async function handler(req, res) {
       const statusData = await statusRes.json();
       runStatus = statusData.status;
       attempts++;
+
+      console.log(`⏱️ Polling (${attempts}) – Status:`, runStatus);
     }
 
     if (runStatus !== "completed") {
+      console.error("❌ Run did not complete:", runStatus);
       return res.status(500).json({ error: "Assistant failed to complete." });
     }
 
-    // Step 5: Retrieve messages
+    // Fetch assistant messages
     const messagesRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -88,11 +98,12 @@ export default async function handler(req, res) {
 
     const messagesData = await messagesRes.json();
     const finalMessage = messagesData.data[messagesData.data.length - 1];
+    console.log("✅ Final assistant message:", finalMessage);
 
-    res.status(200).json({ reply: finalMessage?.content?.[0]?.text?.value || "I wasn’t able to generate a response." });
+    res.status(200).json({ reply: finalMessage?.content?.[0]?.text?.value || "No reply generated." });
 
   } catch (err) {
-    console.error("Handler Error:", err);
+    console.error("💥 Handler Error:", err);
     res.status(500).json({ error: "Something went wrong." });
   }
 }
