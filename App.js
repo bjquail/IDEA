@@ -30,15 +30,32 @@ export default function IdeaChat() {
   };
 
   return (
-    <main style={{ maxWidth: "600px", margin: "0 auto", padding: "2rem" }}>
-      <h1 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>IDEA: Instructional Design Experience Assistant</h1>
-      <div style={{ border: "1px solid #ccc", borderRadius: "8px", padding: "1rem", minHeight: "300px" }}>
+    <main style={{
+      maxWidth: "720px",
+      margin: "2rem auto",
+      padding: "1.5rem",
+      fontFamily: "system-ui, sans-serif",
+      color: "#1e293b"
+    }}>
+      <h1 style={{ fontSize: "1.75rem", fontWeight: "600", marginBottom: "1.25rem" }}>
+        IDEA: <span style={{ fontWeight: "400" }}>Instructional Design Experience Assistant</span>
+      </h1>
+
+      <div style={{
+        border: "1px solid #e2e8f0",
+        borderRadius: "0.5rem",
+        padding: "1rem",
+        minHeight: "300px",
+        backgroundColor: "#f8fafc",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.05)"
+      }}>
         {messages.map((msg, i) => (
-          <p key={i} style={{ marginBottom: "0.75rem" }}>
+          <p key={i} style={{ marginBottom: "0.75rem", lineHeight: "1.5" }}>
             <strong>{msg.role === "assistant" ? "IDEA" : "You"}:</strong> {msg.content}
           </p>
         ))}
       </div>
+
       <div style={{ display: "flex", marginTop: "1rem", gap: "0.5rem" }}>
         <input
           type="text"
@@ -47,10 +64,28 @@ export default function IdeaChat() {
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder="Ask me anything..."
           disabled={loading}
-          style={{ flex: 1, padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}
+          style={{
+            flex: 1,
+            padding: "0.75rem 1rem",
+            borderRadius: "0.5rem",
+            border: "1px solid #cbd5e1",
+            fontSize: "1rem"
+          }}
         />
-        <button onClick={sendMessage} disabled={loading} style={{ padding: "0.5rem 1rem" }}>
-          Send
+        <button
+          onClick={sendMessage}
+          disabled={loading}
+          style={{
+            backgroundColor: "#2563eb",
+            color: "#fff",
+            border: "none",
+            padding: "0.75rem 1.25rem",
+            borderRadius: "0.5rem",
+            cursor: loading ? "not-allowed" : "pointer",
+            fontWeight: "500"
+          }}
+        >
+          {loading ? "Thinking..." : "Send"}
         </button>
       </div>
     </main>
