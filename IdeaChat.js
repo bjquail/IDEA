@@ -1,6 +1,6 @@
 // IdeaChat.js
 import { useState } from "react";
-import styles from "./IdeaChat.module.css";
+import styles from "./index.module.css";
 
 export default function IdeaChat() {
   const [messages, setMessages] = useState([
