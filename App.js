@@ -1,4 +1,5 @@
 import { useState } from "react";
+import styles from "./IdeaChat.module.css";
 
 export default function IdeaChat() {
   const [messages, setMessages] = useState([
@@ -30,33 +31,20 @@ export default function IdeaChat() {
   };
 
   return (
-    <main style={{
-      maxWidth: "720px",
-      margin: "2rem auto",
-      padding: "1.5rem",
-      fontFamily: "system-ui, sans-serif",
-      color: "#1e293b"
-    }}>
-      <h1 style={{ fontSize: "1.75rem", fontWeight: "600", marginBottom: "1.25rem" }}>
-        IDEA: <span style={{ fontWeight: "400" }}>Instructional Design Experience Assistant</span>
+    <main className={styles.container}>
+      <h1 className={styles.title}>
+        IDEA: <span style={{ fontWeight: 400 }}>Instructional Design Experience Assistant</span>
       </h1>
 
-      <div style={{
-        border: "1px solid #e2e8f0",
-        borderRadius: "0.5rem",
-        padding: "1rem",
-        minHeight: "300px",
-        backgroundColor: "#f8fafc",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.05)"
-      }}>
+      <div className={styles.chatBox}>
         {messages.map((msg, i) => (
-          <p key={i} style={{ marginBottom: "0.75rem", lineHeight: "1.5" }}>
+          <p key={i} className={styles.message}>
             <strong>{msg.role === "assistant" ? "IDEA" : "You"}:</strong> {msg.content}
           </p>
         ))}
       </div>
 
-      <div style={{ display: "flex", marginTop: "1rem", gap: "0.5rem" }}>
+      <div className={styles.inputGroup}>
         <input
           type="text"
           value={input}
@@ -64,28 +52,18 @@ export default function IdeaChat() {
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder="Ask me anything..."
           disabled={loading}
-          style={{
-            flex: 1,
-            padding: "0.75rem 1rem",
-            borderRadius: "0.5rem",
-            border: "1px solid #cbd5e1",
-            fontSize: "1rem"
-          }}
+          className={styles.input}
         />
-        <button
-          onClick={sendMessage}
-          disabled={loading}
-          style={{
-            backgroundColor: "#2563eb",
-            color: "#fff",
-            border: "none",
-            padding: "0.75rem 1.25rem",
-            borderRadius: "0.5rem",
-            cursor: loading ? "not-allowed" : "pointer",
-            fontWeight: "500"
-          }}
-        >
-          {loading ? "Thinking..." : "Send"}
+        <button onClick={sendMessage} disabled={loading} className={styles.button}>
+          <svg
+            className={styles.icon}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
         </button>
       </div>
     </main>
