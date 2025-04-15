@@ -1,5 +1,11 @@
 // pages/api/chat.js
 
+import { OpenAI } from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -8,93 +14,42 @@ export default async function handler(req, res) {
   const { messages } = req.body;
 
   try {
-    // 1. Create a new thread
-    const threadRes = await fetch('https://api.openai.com/v1/threads', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-        'OpenAI-Beta': 'assistants=v2'
-      }
+    // 1. Create thread
+    const thread = await openai.beta.threads.create();
+
+    // 2. Add user message to thread
+    await openai.beta.threads.messages.create(thread.id, {
+      role: 'user',
+      content: messages[messages.length - 1].content
     });
-    const thread = await threadRes.json();
-    console.log('🧵 Thread created:', thread);
 
-    // 2. Add messages to the thread
-    for (const message of messages) {
-      const msgRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-          'OpenAI-Beta': 'assistants=v2'
-        },
-        body: JSON.stringify({
-          role: message.role,
-          content: message.content
-        })
-      });
-      const added = await msgRes.json();
-      console.log('📩 Message added:', added);
-    }
-
-    // 3. Start a run
-    const runRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-        'OpenAI-Beta': 'assistants=v2'
-      },
-      body: JSON.stringify({
-        assistant_id: process.env.ASSISTANT_ID
-      })
+    // 3. Run assistant on thread
+    const run = await openai.beta.threads.runs.create(thread.id, {
+      assistant_id: process.env.ASSISTANT_ID
     });
-    const run = await runRes.json();
-    console.log('🏃‍♂️ Run started:', run);
 
-    // 4. Poll for completion (max 10 attempts)
+    // 4. Poll for completion
     let runStatus = run.status;
-    let attempts = 0;
-    const maxAttempts = 10;
-
-    while (runStatus !== 'completed' && runStatus !== 'failed' && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const statusRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/runs/${run.id}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'OpenAI-Beta': 'assistants=v2'
-        }
-      });
-      const statusData = await statusRes.json();
-      runStatus = statusData.status;
-      attempts++;
-      console.log(`⏱️ Polling (${attempts}) – Status:`, runStatus);
+    while (runStatus !== 'completed' && runStatus !== 'failed') {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const updatedRun = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      runStatus = updatedRun.status;
     }
 
-    if (runStatus !== 'completed') {
-      console.error('❌ Run did not complete:', runStatus);
-      return res.status(504).json({ error: 'Assistant did not respond in time.' });
+    if (runStatus === 'failed') {
+      return res.status(500).json({ error: 'Run failed' });
     }
 
-    // 5. Retrieve the final messages
-    const messagesRes = await fetch(`https://api.openai.com/v1/threads/${thread.id}/messages`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'OpenAI-Beta': 'assistants=v2'
-      }
-    });
-    const messagesData = await messagesRes.json();
-    console.log('📨 Final messages:', messagesData);
+    // 5. Retrieve messages
+    const messagesList = await openai.beta.threads.messages.list(thread.id);
+    const replyMessage = messagesList.data.find(msg => msg.role === 'assistant');
 
-    const finalMessage = messagesData.data.find(
-      msg => msg.role === 'assistant'
-    );
+    const replyContent = replyMessage?.content?.[0]?.text?.value || 'Something went wrong retrieving the assistant’s reply.';
 
-    res.status(200).json({ reply: finalMessage?.content[0]?.text?.value || 'No reply received.' });
+    res.status(200).json({ reply: replyContent });
 
-  } catch (err) {
-    console.error('🔥 Server error:', err);
+  } catch (error) {
+    console.error("OpenAI SDK error:", error);
     res.status(500).json({ error: 'Something went wrong.' });
   }
 }
