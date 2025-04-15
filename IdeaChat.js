@@ -14,6 +14,7 @@ export default function IdeaChat() {
     const newMessages = [...messages, { role: "user", content: input }];
     setMessages(newMessages);
     setInput("");
+    setInput("");
     setLoading(true);
 
     try {
@@ -37,13 +38,20 @@ export default function IdeaChat() {
         IDEA: <span style={{ fontWeight: 400 }}>Instructional Design Experience Assistant</span>
       </h1>
 
-      <div className={styles.chatBox}>
-        {messages.map((msg, i) => (
-          <p key={i} className={styles.message}>
-            <strong>{msg.role === "assistant" ? "IDEA" : "You"}:</strong> {msg.content}
-          </p>
-        ))}
-      </div>
+<div className={styles.chatBox}>
+  {messages.map((msg, index) => (
+    <div
+      key={index}
+      className={`${styles.messageBubble} ${
+        msg.role === 'user' ? styles.userMessage : styles.assistantMessage
+      }`}
+    >
+      <span className={styles.label}>{msg.role === 'user' ? 'You' : 'IDEA'}:</span>
+      <span dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br />') }} />
+    </div>
+  ))}
+</div>
+
 
       <div className={styles.inputGroup}>
         <input
