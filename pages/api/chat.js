@@ -7,46 +7,32 @@ const openai = new OpenAI({
 
 export default async function handler(req, res) {
   try {
-    const { messages } = req.body;
+  const thread = await openai.beta.threads.create();
+  const message = await openai.beta.threads.messages.create(thread.id, {
+    role: "user",
+    content: userMessage,
+  });
+  const run = await openai.beta.threads.runs.create(thread.id, {
+    assistant_id: process.env.ASSISTANT_ID,
+  });
 
-    // Step 1: Create a thread
-    const thread = await openai.beta.threads.create();
-
-    // Step 2: Add user message to thread
-    await openai.beta.threads.messages.create(thread.id, {
-      role: 'user',
-      content: messages[messages.length - 1].content
-    });
-
-    // Step 3: Run assistant
-    const run = await openai.beta.threads.runs.create(thread.id, {
-      assistant_id: process.env.ASSISTANT_ID
-    });
-
-    // Step 4: Poll until run completes (simple polling loop)
-    let completed = false;
-    let response = null;
-
-    while (!completed) {
-      const status = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-      if (status.status === 'completed') {
-        completed = true;
-
-        const messages = await openai.beta.threads.messages.list(thread.id);
-        response = messages.data
-          .filter(m => m.role === 'assistant')
-          .map(m => m.content?.[0]?.text?.value)
-          .join('\n');
-      } else if (status.status === 'failed') {
-        throw new Error('Assistant run failed.');
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 1500)); // wait 1.5 sec
-      }
-    }
-
-    res.status(200).json({ reply: response || 'Something went wrong retrieving the reply.' });
-  } catch (error) {
-    console.error('OpenAI SDK Error:', error);
-    res.status(500).json({ reply: 'Sorry, something went wrong.' });
+  let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+  while (runStatus.status !== "completed" && runStatus.status !== "failed") {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
   }
+
+  if (runStatus.status === "failed") {
+    console.error("❌ Run failed:", runStatus.last_error); // 🔍 Add this
+    return res.status(500).json({ reply: "Sorry, something went wrong." });
+  }
+
+  const messages = await openai.beta.threads.messages.list(thread.id);
+  const reply = messages.data[0].content[0].text.value;
+  res.status(200).json({ reply });
+
+} catch (error) {
+  console.error("❌ Uncaught error:", error); // 🔍 Add this
+  res.status(500).json({ reply: "Sorry, something went wrong." });
 }
+
