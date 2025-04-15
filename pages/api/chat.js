@@ -35,4 +35,4 @@ export default async function handler(req, res) {
   console.error("❌ Uncaught error:", error); // 🔍 Add this
   res.status(500).json({ reply: "Sorry, something went wrong." });
 }
-
+}
