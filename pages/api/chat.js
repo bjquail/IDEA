@@ -1,11 +1,10 @@
-// pages/api/chat.js
 import { OpenAI } from "openai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const assistantId = process.env.OPENAI_ASSISTANT_ID;
+const assistantId = process.env.ASSISTANT_ID;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -13,6 +12,11 @@ export default async function handler(req, res) {
   }
 
   const { messages } = req.body;
+
+  if (!assistantId) {
+    console.error("❌ ASSISTANT_ID not found in environment variables.");
+    return res.status(500).json({ reply: "Server error: Missing assistant ID." });
+  }
 
   try {
     const thread = await openai.beta.threads.create();
@@ -37,6 +41,8 @@ export default async function handler(req, res) {
       if (status.status === "completed") {
         result = await openai.beta.threads.messages.list(thread.id);
         break;
+      } else if (status.status === "failed") {
+        throw new Error("Assistant run failed.");
       }
       await new Promise((resolve) => setTimeout(resolve, 1000));
       attempts++;
@@ -48,7 +54,7 @@ export default async function handler(req, res) {
 
     const assistantMessages = result.data
       .filter((msg) => msg.role === "assistant")
-      .map((msg) => msg.content[0].text.value)
+      .map((msg) => msg.content?.[0]?.text?.value || "")
       .join("\n\n");
 
     res.status(200).json({ reply: assistantMessages });
