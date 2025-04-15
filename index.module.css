@@ -107,8 +107,14 @@
   color: #555;
 }
 
+.dots {
+  display: inline-block;
+  margin-left: 0.25rem;
+}
+
 .dots span {
-  animation: blink 1.4s infinite;
+  display: inline-block;
+  animation: blink 1.2s infinite;
   animation-delay: calc(var(--i, 0) * 0.2s);
 }
 
