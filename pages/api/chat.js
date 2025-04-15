@@ -1,38 +1,59 @@
 // pages/api/chat.js
-import { OpenAI } from 'openai';
+import { OpenAI } from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
+const assistantId = process.env.OPENAI_ASSISTANT_ID;
+
 export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  const { messages } = req.body;
+
   try {
-  const thread = await openai.beta.threads.create();
-  const message = await openai.beta.threads.messages.create(thread.id, {
-    role: "user",
-    content: userMessage,
-  });
-  const run = await openai.beta.threads.runs.create(thread.id, {
-    assistant_id: process.env.ASSISTANT_ID,
-  });
+    const thread = await openai.beta.threads.create();
 
-  let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
-  while (runStatus.status !== "completed" && runStatus.status !== "failed") {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    for (const msg of messages) {
+      await openai.beta.threads.messages.create(thread.id, {
+        role: msg.role,
+        content: msg.content,
+      });
+    }
+
+    const run = await openai.beta.threads.runs.create(thread.id, {
+      assistant_id: assistantId,
+    });
+
+    let result;
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    while (attempts < maxAttempts) {
+      const status = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      if (status.status === "completed") {
+        result = await openai.beta.threads.messages.list(thread.id);
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      attempts++;
+    }
+
+    if (!result) {
+      throw new Error("Run did not complete in time.");
+    }
+
+    const assistantMessages = result.data
+      .filter((msg) => msg.role === "assistant")
+      .map((msg) => msg.content[0].text.value)
+      .join("\n\n");
+
+    res.status(200).json({ reply: assistantMessages });
+  } catch (error) {
+    console.error("❌ Server error in /api/chat:", error);
+    res.status(500).json({ reply: "Sorry, something went wrong." });
   }
-
-  if (runStatus.status === "failed") {
-    console.error("❌ Run failed:", runStatus.last_error); // 🔍 Add this
-    return res.status(500).json({ reply: "Sorry, something went wrong." });
-  }
-
-  const messages = await openai.beta.threads.messages.list(thread.id);
-  const reply = messages.data[0].content[0].text.value;
-  res.status(200).json({ reply });
-
-} catch (error) {
-  console.error("❌ Uncaught error:", error); // 🔍 Add this
-  res.status(500).json({ reply: "Sorry, something went wrong." });
-}
 }
