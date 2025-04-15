@@ -33,58 +33,63 @@ export default function IdeaChat() {
   };
 
   return (
-    <main className={styles.container}>
-      <h1 className={styles.title}>
-        IDEA: <span style={{ fontWeight: 400 }}>Instructional Design Experience Assistant</span>
-      </h1>
+  <main className={styles.container}>
+    <h1 className={styles.title}>
+      IDEA: <span style={{ fontWeight: 400 }}>Instructional Design Experience Assistant</span>
+    </h1>
 
-<div className={styles.chatBox}>
-  {messages.map((msg, index) => (
-    <div
-      key={index}
-      className={`${styles.messageBubble} ${
-        msg.role === 'user' ? styles.userMessage : styles.assistantMessage
-      }`}
-    >
-      <span className={styles.label}>{msg.role === 'user' ? 'You' : 'IDEA'}:</span>
-      <span dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br />') }} />
+    <div className={styles.chatBox}>
+      {messages.map((msg, index) => (
+        <div
+          key={index}
+          className={`${styles.messageBubble} ${
+            msg.role === "user" ? styles.userMessage : styles.assistantMessage
+          }`}
+        >
+          <span className={styles.label}>{msg.role === "user" ? "You" : "IDEA"}:</span>
+          <span dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, "<br />") }} />
+        </div>
+      ))}
+
+      {loading && (
+        <div className={styles.assistantMessage}>
+          <span className={styles.label}>IDEA:</span>
+          <span className={styles.thinking}>
+            Thinking
+            <span className={styles.dots}>
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
+            </span>
+          </span>
+        </div>
+      )}
     </div>
-  ))}
-  
-    {loading && (
-    <div className={styles.assistantMessage}>
-      <span className={styles.label}>IDEA:</span>
-      <span className={styles.thinking}>
-        Thinking<span className={styles.dots}><span>.</span><span>.</span><span>.</span></span>
-      </span>
+
+    <div className={styles.inputGroup}>
+      <input
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+        placeholder="Ask me anything..."
+        disabled={loading}
+        className={styles.input}
+      />
+      <button onClick={sendMessage} disabled={loading} className={styles.button}>
+        <svg
+          className={styles.icon}
+          fill="white"
+          stroke="white"
+          strokeWidth="2"
+          viewBox="0 0 24 24"
+          width="20"
+          height="20"
+        >
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </button>
     </div>
-  )}
-</div>
-</div>
+  </main>
+);
 
-
-      <div className={styles.inputGroup}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="How can I help?"
-          disabled={loading}
-          className={styles.input}
-        />
-        <button onClick={sendMessage} disabled={loading} className={styles.button}>
-          <svg
-            className={styles.icon}
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </button>
-      </div>
-    </main>
-  );
-}
