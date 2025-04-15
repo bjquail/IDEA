@@ -50,6 +50,16 @@ export default function IdeaChat() {
       <span dangerouslySetInnerHTML={{ __html: msg.content.replace(/\n/g, '<br />') }} />
     </div>
   ))}
+  
+    {loading && (
+    <div className={styles.assistantMessage}>
+      <span className={styles.label}>IDEA:</span>
+      <span className={styles.thinking}>
+        Thinking<span className={styles.dots}><span>.</span><span>.</span><span>.</span></span>
+      </span>
+    </div>
+  )}
+</div>
 </div>
 
 
@@ -59,7 +69,7 @@ export default function IdeaChat() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="Ask me anything..."
+          placeholder="How can I help?"
           disabled={loading}
           className={styles.input}
         />
