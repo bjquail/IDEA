@@ -11,6 +11,16 @@ export default async function handler(req, res) {
 
   const { threadId, runId } = req.body;
 
+  // ✅ New: guard clause for invalid IDs
+  if (
+    !threadId || !runId ||
+    !threadId.startsWith("thread_") ||
+    !runId.startsWith("run_")
+  ) {
+    console.error("Invalid or missing threadId/runId:", { threadId, runId });
+    return res.status(400).json({ error: "Invalid or missing threadId or runId" });
+  }
+
   try {
     const runStatus = await openai.beta.threads.runs.retrieve(threadId, runId);
 
@@ -26,7 +36,4 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ status: runStatus.status });
   } catch (err) {
-    console.error("Polling error:", err);
-    res.status(500).json({ reply: "Polling failed." });
-  }
-}
+    console
