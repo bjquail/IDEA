@@ -35,5 +35,8 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({ status: runStatus.status });
-  } catch (err) {
-    console
+    } catch (err) {
+    console.error("Polling error:", err.response?.data || err.message);
+    res.status(500).json({ reply: "Polling failed." });
+  }
+}
