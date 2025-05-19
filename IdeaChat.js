@@ -12,33 +12,60 @@ export default function IdeaChat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-    const newMessages = [...messages, { role: "user", content: input }];
-    setMessages(newMessages);
-    setInput("");
-    setLoading(true);
+const sendMessage = async () => {
+  if (!input.trim()) return;
+  const newMessages = [...messages, { role: "user", content: input }];
+  setMessages(newMessages);
+  setInput("");
+  setLoading(true);
 
-    try {
-      const res = await fetch("/api/chat", {
+  try {
+    // Step 1: Start thread/run
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: newMessages }),
+    });
+
+    const { threadId, runId } = await res.json();
+
+    // Step 2: Poll for response
+    for (let i = 0; i < 20; i++) {
+      const pollRes = await fetch("/api/status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ threadId, runId }),
       });
-      const data = await res.json();
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: data.reply || "No reply." },
-      ]);
-    } catch (err) {
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: "Sorry, something went wrong." },
-      ]);
-    } finally {
-      setLoading(false);
+
+      const result = await pollRes.json();
+
+      if (result.status === "completed") {
+        setMessages([
+          ...newMessages,
+          { role: "assistant", content: result.reply || "No reply." },
+        ]);
+        setLoading(false);
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // wait 1s
     }
-  };
+
+    // If we reach here, it timed out
+    setMessages([
+      ...newMessages,
+      { role: "assistant", content: "Sorry, response timed out." },
+    ]);
+  } catch (err) {
+    setMessages([
+      ...newMessages,
+      { role: "assistant", content: "Sorry, something went wrong." },
+    ]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <main className={styles.container}>
