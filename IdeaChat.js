@@ -69,12 +69,12 @@ const sendMessage = async () => {
 
   return (
     <main className={styles.container}>
-      <h1 className={styles.title}>
-        IDEA:{" "}
-        <span style={{ fontWeight: 400 }}>
-          Instructional Design Experience Assistant
-        </span>
-      </h1>
+      //<h1 className={styles.title}>
+      //  IDEA:{" "}
+      //  <span style={{ fontWeight: 400 }}>
+      //    Instructional Design Experience Assistant
+      //  </span>
+     // </h1>
 
       <div className={styles.chatBox}>
         {messages.map((msg, index) => (
