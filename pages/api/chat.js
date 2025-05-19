@@ -4,7 +4,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const assistantId = process.env.ASSISTANT_ID;
+const assistantId = process.env.OPENAI_ASSISTANT_ID;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
