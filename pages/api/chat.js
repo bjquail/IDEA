@@ -13,6 +13,8 @@ export default async function handler(req, res) {
 
   const { messages } = req.body;
 
+  console.log("📩 Incoming messages:", messages); // ✅ Add this log
+
   if (!assistantId) {
     console.error("❌ ASSISTANT_ID not found.");
     return res.status(500).json({ reply: "Missing Assistant ID." });
