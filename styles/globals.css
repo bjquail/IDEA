@@ -35,3 +35,8 @@ body {
   text-decoration: underline;
 }
 
+.chat-wrapper {
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
