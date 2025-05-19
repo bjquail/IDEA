@@ -4,7 +4,7 @@ import IdeaChat from "../IdeaChat";
 export default function Home() {
   return (
 <main className="min-h-screen flex flex-col items-center justify-start p-4 bg-[#f7f9fc]">
-  <h1 className="text-xl font-bold mb-4">IDEA: Instructional Design Experience Assistant</h1>
+  //<h1 className="text-xl font-bold mb-4">IDEA: Instructional Design Experience Assistant</h1>//
 
   <IdeaChat />
 
