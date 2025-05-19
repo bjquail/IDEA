@@ -7,10 +7,20 @@ export default function Home() {
       <div className="content-wrapper">
         <IdeaChat />
 
-        <div className="cta-banner" style="text-align: center">
-          ⚡ Want faster responses, saved projects, and exclusive features?  
-          <a href="https://yourdomain.com/idea-pro" target="_blank">Get IDEA Pro</a>
-        </div>
+ <div
+  className="cta-banner"
+  style={{ textAlign: "center" }}
+>
+  ⚡ Want faster responses, saved projects, and exclusive features?  
+  <a
+    href="https://yourdomain.com/idea-pro"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{ marginLeft: "0.5rem", textDecoration: "underline", color: "#1d4ed8" }}
+  >
+    Get IDEA Pro
+  </a>
+</div>
       </div>
     </main>
   );
