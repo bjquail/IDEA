@@ -24,9 +24,14 @@ body {
   border-radius: 8px;
   text-align: center;
   font-size: 0.95rem;
+  max-width: 640px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 .cta-banner a {
   color: #1d4ed8;
   margin-left: 0.5rem;
   text-decoration: underline;
 }
+
