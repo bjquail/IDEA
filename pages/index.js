@@ -13,7 +13,7 @@ export default function Home() {
 >
   ⚡ Want faster responses, saved projects, and exclusive features?  
   <a
-    href="https://yourdomain.com/idea-pro"
+    href="https://stan.store/bqlearningdesign/"
     target="_blank"
     rel="noopener noreferrer"
     style={{ marginLeft: "0.5rem", textDecoration: "underline", color: "#1d4ed8" }}
